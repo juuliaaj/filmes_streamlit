@@ -7,8 +7,7 @@ from datetime import datetime
 
 # Configuração da página
 st.set_page_config(
-    page_title="Dashboard Netflix 🎬",
-    page_icon="🎥",
+    page_title="Dashboard Netflix",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -99,16 +98,41 @@ if countries:
 if genres:
     filtered_df = filtered_df[filtered_df['primary_genre'].isin(genres)]
 
+def criar_mapa_interativo(df):
+    """Cria e retorna um mapa de coroplético interativo da distribuição de títulos."""
+    contagem_paises = df['primary_country'].value_counts().reset_index()
+    contagem_paises.columns = ['country', 'count']
+
+    fig = px.choropleth(
+        contagem_paises,
+        locations='country',
+        locationmode='country names',
+        color='count',
+        hover_name='country',
+        hover_data={'count': True, 'country': False},
+        color_continuous_scale=px.colors.sequential.Plasma,
+        title='Distribuição de Títulos por País'
+    )
+    fig.update_layout(
+        margin={"r":0,"t":40,"l":0,"b":0},
+        geo=dict(
+            showframe=False,
+            showcoastlines=False,
+            projection_type='equirectangular'
+        )
+    )
+    return fig
+
 # Layout principal com abas
 tab1, tab2, tab3, tab4 = st.tabs([
-    "📊 Visão Geral", 
-    "🎭 Análise de Conteúdo", 
-    "🌍 Distribuição Global", 
-    "🔍 Explorar Catálogo"
+    " Visão Geral", 
+    " Análise de Conteúdo", 
+    " Distribuição Global", 
+    " Explorar Catálogo"
 ])
 
 with tab1:
-    st.header("📊 Visão Geral do Catálogo Netflix")
+    st.header("Visão Geral do Catálogo Netflix")
     
     # Métricas iniciais
     col1, col2, col3, col4 = st.columns(4)
@@ -137,7 +161,7 @@ with tab1:
     
     with col2:
         st.subheader("Conteúdo Adicionado por Ano")
-        # Filtrar apenas anos com dados válidos
+        
         yearly_data = filtered_df[filtered_df['year_added'].notna()]
         yearly_additions = yearly_data['year_added'].value_counts().sort_index()
         
@@ -147,7 +171,7 @@ with tab1:
         st.plotly_chart(fig2, use_container_width=True)
 
 with tab2:
-    st.header("🎭 Análise de Conteúdo")
+    st.header(" Análise de Conteúdo")
     
     col1, col2 = st.columns(2)
     
@@ -197,7 +221,17 @@ with tab2:
             st.info("Nenhuma série encontrada com os filtros atuais.")
 
 with tab3:
-    st.header("🌍 Distribuição Global")
+    st.header("Distribuição Geográfica dos Títulos")
+
+    # Mapa Interativo
+    st.subheader("Mapa de Distribuição de Conteúdos")
+    if not filtered_df.empty:
+        mapa_fig = criar_mapa_interativo(filtered_df)
+        st.plotly_chart(mapa_fig, use_container_width=True)
+    else:
+        st.info("Nenhum dado para exibir no mapa com os filtros atuais.")
+
+    st.markdown("---")
     
     col1, col2 = st.columns(2)
     
@@ -248,7 +282,7 @@ with tab3:
         st.info("Nenhum dado disponível para a timeline com os filtros atuais.")
 
 with tab4:
-    st.header("🔍 Explorar Catálogo")
+    st.header(" Explorar Catálogo")
     
     # Busca e filtros avançados
     col1, col2 = st.columns([1, 3])
@@ -302,7 +336,7 @@ with tab4:
         st.write(f"**{len(result_df)} resultados encontrados**")
         
         for idx, row in result_df.head(30).iterrows():
-            with st.expander(f"🎬 {row['title']} ({row['release_year']}) - {row['type']}"):
+            with st.expander(f" {row['title']} ({row['release_year']}) - {row['type']}"):
                 col_a, col_b = st.columns(2)
                 with col_a:
                     st.write(f"**Tipo:** {row['type']}")
@@ -323,25 +357,25 @@ with tab4:
 
 # Documentação no sidebar
 st.sidebar.markdown("---")
-st.sidebar.header("📖 Como Usar Este Dashboard")
+st.sidebar.header(" Como Usar Este Dashboard")
 
 st.sidebar.markdown("""
-**🎯 Objetivo:**
+** Objetivo:**
 Explorar e analisar o catálogo completo da Netflix, identificando padrões e tendências.
 
-**🧭 Navegação:**
+** Navegação:**
 - **Visão Geral**: Métricas principais e distribuição básica
 - **Análise de Conteúdo**: Gêneros, classificações e durações
 - **Distribuição Global**: Análise geográfica e temporal
 - **Explorar Catálogo**: Busca detalhada e filtros avançados
 
-**🎛️ Filtros:**
+** Filtros:**
 Todos os filtros na sidebar afetam simultaneamente todos os gráficos e visualizações.
 """)
 
 # Informações adicionais
 st.sidebar.markdown("---")
 st.sidebar.info(
-    "💡 **Dica:** Use a aba 'Explorar Catálogo' para buscar "
+    " **Dica:** Use a aba 'Explorar Catálogo' para buscar "
     "conteúdos específicos por diretor, ator ou outros critérios."
 )

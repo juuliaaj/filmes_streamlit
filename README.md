@@ -21,6 +21,6 @@ projeto/
 ├── app.py
 ├── requirements.txt
 ├── data/
-│   └── netflix_titles.csv
+│   └── movies.csv
 └── README.md
 ```
